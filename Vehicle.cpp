@@ -3,22 +3,36 @@
 #include <chrono>
 #include <memory>
 #include <thread>
+#include <iostream>
 #include <random>
+
 Vehicle::Vehicle(int x, int y, Type type, std::shared_ptr<TrafficLight> trafficLight) : _x(x), _y(y), _type(type), _running(true), _direction(0), _trafficLight(trafficLight)
 {
     _colorR = rand() % 256;
     _colorG = rand() % 256;
     _colorB = rand() % 256;
-    _speed = (rand() % 10 ) + 1;
+    _speed = (rand() % 5 ) + 1;
 }
 
 void Vehicle::move() {
 
 while(_running)
 {
+    if(_type == VERTICAL)
+    {
+        if(_y != -30 && _y != 540)
+        {
+        _y+=1;
+        
+        }
+        else if(_trafficLight->getState()==TrafficLight::RED){
+            _y+=1;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 4));
+    }
     if(_type == HORIZONTAL)
     {
-        if ( ((_x > 400 || _x < 300) && _y == 0))
+        if ( _x!=350 && _y == 0)
         {
         switch(_direction) {
             case 0: // prawo
@@ -50,7 +64,7 @@ while(_running)
                 }
                 break;
         }
-        }else if( (_x < 450 || _x > 550) && _y == config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT )
+        }else if( _x!=450 && _y == config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT )
         {
             switch(_direction) {
             case 0: // prawo
@@ -117,18 +131,7 @@ while(_running)
         }
     }
    
-    
-    
-//     }else
-//     {
-//         _y += _speed;      
-//         if (_y >= config::WINDOW_HEIGHT) {
-//             _running = false;
-//         }
-//     }
-//    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 10));
-
+    std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 4));
 }
 }
 }
