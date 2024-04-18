@@ -28,6 +28,10 @@ while(_running)
         else if(_trafficLight->getState()==TrafficLight::RED){
             _y+=1;
         }
+        if( _y > config::WINDOW_HEIGHT)
+        {
+            _running =false;
+        }
         std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 4));
     }
     if(_type == HORIZONTAL)
