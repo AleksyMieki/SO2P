@@ -41,12 +41,13 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    
+    bool spawnHorizontal = true;
     std::vector<std::shared_ptr<Vehicle>> vehicles;
     std::vector<std::thread> vehicleThreads;
-    bool spawnHorizontal = true;
+
     std::shared_ptr<TrafficLight> tf = std::make_shared<TrafficLight>();
     std::thread tft = std::thread(&TrafficLight::automaticToggle, tf);
+
     std::thread spawnerThread = std::thread(spawnerMethod,spawnHorizontal,std::ref(tf),std::ref(vehicles), std::ref(vehicleThreads));
     
     SDL_Event e;
@@ -71,7 +72,6 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        
         SDL_RenderPresent(renderer);
 
         drawTrack(renderer);
@@ -110,13 +110,14 @@ int main(int argc, char* argv[]) {
 }
 
 
-void spawnerMethod(  bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads)
+void spawnerMethod(bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads)
 {        
     while(!quit)
     {
     auto randN = rand() % 10;
         
     if (randN > 3) {
+
             if(spawnHorizontal)
             {
                 spawnVehiclesHorizontal(vehicles,vehicleThreads,tf);
@@ -128,7 +129,8 @@ void spawnerMethod(  bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std
 
             spawnHorizontal=!spawnHorizontal;
         }
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
     }
 }
 
@@ -180,6 +182,7 @@ void deleteVehicles(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector
 {
     auto v = vehicles.begin();
     auto vth = vehicleThreads.begin();
+
     while (v != vehicles.end() && vth != vehicleThreads.end()) {
             if (!(*v)->isRunning()) {
                 if(vth->joinable())
@@ -197,7 +200,7 @@ void deleteVehicles(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector
 
 void drawTrack(SDL_Renderer* renderer)
 {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Clear screen with black
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); 
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColor(renderer, 120, 120, 120, 255); 

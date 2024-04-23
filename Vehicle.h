@@ -4,18 +4,21 @@
 #include <memory>
 #include <atomic>
 #include <SDL.h>
+#include <mutex>
 #include "TrafficLight.h"
 enum Type { HORIZONTAL, VERTICAL };
 
 class Vehicle {
 private:
 
-    std::atomic<int> _x, _y;
-    std::atomic<bool> _running;
+    int _x, _y;
+    bool _running;
     int _direction;
     std::shared_ptr<TrafficLight> _trafficLight;  
     int _speed;
     Type _type;
+    std::mutex _mtx;
+    std::condition_variable _cv;
     unsigned char _colorR, _colorG, _colorB;
 
 public:

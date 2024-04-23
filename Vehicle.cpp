@@ -17,128 +17,66 @@ Vehicle::Vehicle(int x, int y, Type type, std::shared_ptr<TrafficLight> trafficL
 void Vehicle::move() {
 
 while(_running)
-{
-    if(_type == VERTICAL)
+{   
+    //petla goracego czekania wyeliminowac 
+    //zmienna warunkowa
+
+    if(_type == Type::HORIZONTAL)
     {
-        if(_y != -30 && _y != 540)
-        {
-        _y+=1;
+     if ( (_x == 350 && _y == 0) || (_x == 450 && _y == config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT )) {
+            _trafficLight->waitForGreen();
+        }
         
+            switch(_direction) {
+                case 0: 
+                    _x += 1;
+                    if (_x >= config::WINDOW_WIDTH - config::VEHICLE_WIDTH) {
+                        _x = config::WINDOW_WIDTH - config::VEHICLE_WIDTH; 
+                        _direction = 1; 
+                    }
+                    break;
+                case 1:
+                    _y += 1;
+                    if (_y >= config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT) {
+                        _y = config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT; 
+                        _direction = 2; 
+                    }
+                    break;
+                case 2: 
+                    _x -= 1;
+                    if (_x <= 0) {
+                        _x = 0; 
+                        _direction = 3; 
+                    }
+                    break;
+                case 3: 
+                    _y -= 1;
+                    if (_y <= 0) {
+                        _y = 0; 
+                        _direction = 0; 
+                    }
+                    break;
+            }
+    }
+    
+    if(_type == Type::VERTICAL)
+    {
+        if(_y == -30 || _y == 540)
+        {
+            _trafficLight->waitForRed();
         }
-        else if(_trafficLight->getState()==TrafficLight::RED){
-            _y+=1;
-        }
+        _y+=1;
+         
         if( _y > config::WINDOW_HEIGHT)
         {
-            _running =false;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 4));
-    }
-    if(_type == HORIZONTAL)
-    {
-        if ( _x!=350 && _y == 0)
-        {
-        switch(_direction) {
-            case 0: // prawo
-                _x += 1;
-                if (_x >= config::WINDOW_WIDTH - config::VEHICLE_WIDTH) {
-                    _x = config::WINDOW_WIDTH - config::VEHICLE_WIDTH; 
-                    _direction = 1; 
-                }
-                break;
-            case 1: // dół
-                _y += 1;
-                if (_y >= config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT) {
-                    _y = config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT; 
-                    _direction = 2; 
-                }
-                break;
-            case 2: // lewo
-                _x -= 1;
-                 if (_x <= 0) {
-                    _x = 0; 
-                    _direction = 3; 
-                }
-                break;
-            case 3: // góra
-                _y -= 1;
-                if (_y <= 0) {
-                    _y = 0; 
-                    _direction = 0; 
-                }
-                break;
-        }
-        }else if( _x!=450 && _y == config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT )
-        {
-            switch(_direction) {
-            case 0: // prawo
-                _x += 1;
-                if (_x >= config::WINDOW_WIDTH - config::VEHICLE_WIDTH) {
-                    _x = config::WINDOW_WIDTH - config::VEHICLE_WIDTH; 
-                    _direction = 1; 
-                }
-                break;
-            case 1: // dół
-                _y += 1;
-                if (_y >= config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT) {
-                    _y = config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT; 
-                    _direction = 2; 
-                }
-                break;
-            case 2: // lewo
-                _x -= 1;
-                 if (_x <= 0) {
-                    _x = 0; 
-                    _direction = 3; 
-                }
-                break;
-            case 3: // góra
-                _y -= 1;
-                if (_y <= 0) {
-                    _y = 0; 
-                    _direction = 0; 
-                }
-                break;
-        }
-        }
-        else if ( _trafficLight->getState() == TrafficLight::GREEN || _x == config::WINDOW_WIDTH - config::VEHICLE_WIDTH || _x == 0)
-        {
-            switch(_direction) {
-            case 0: // prawo
-                _x += 1;
-                if (_x >= config::WINDOW_WIDTH - config::VEHICLE_WIDTH) {
-                    _x = config::WINDOW_WIDTH - config::VEHICLE_WIDTH; 
-                    _direction = 1; 
-                }
-                break;
-            case 1: // dół
-                _y += 1;
-                if (_y >= config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT) {
-                    _y = config::WINDOW_HEIGHT - config::VEHICLE_HEIGHT; 
-                    _direction = 2; 
-                }
-                break;
-            case 2: // lewo
-                _x -= 1;
-                 if (_x <= 0) {
-                    _x = 0; 
-                    _direction = 3; 
-                }
-                break;
-            case 3: // góra
-                _y -= 1;
-                if (_y <= 0) {
-                    _y = 0; 
-                    _direction = 0; 
-                }
-                break;
+            _running = false;
         }
     }
-   
-    std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 4));
+        std::this_thread::sleep_for(std::chrono::milliseconds(_speed * 3));
+
+    }
 }
-}
-}
+
 
 void Vehicle::draw(SDL_Renderer* renderer) const {
     
