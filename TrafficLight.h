@@ -11,23 +11,24 @@ public:
     enum State { RED, GREEN, YELLOW };
 
 private:
+
     bool _running = true;
     State _state;
 
     std::mutex mtx;
     std::condition_variable cv;
     State current_state;
-
+    int sleep_time;
 public:
 
-    TrafficLight() : _state(RED) {} 
+    TrafficLight(int st) : _state(RED), sleep_time(st) {} 
 
     void automaticToggle() {
         while (_running) {
             
-            std::this_thread::sleep_for(std::chrono::seconds(5)); // RED
+            std::this_thread::sleep_for(std::chrono::seconds(sleep_time)); 
             changeState(GREEN);
-            std::this_thread::sleep_for(std::chrono::seconds(5)); // RED
+            std::this_thread::sleep_for(std::chrono::seconds(sleep_time)); 
             changeState(RED);
         
         }
@@ -48,14 +49,17 @@ public:
     }
 
     bool isGreen() const {
-        if(_running == false) return true;
         return current_state == GREEN;
     }
+
     bool isRed() const {
-        if(_running == false) return true;
         return current_state == RED;
     }
 
+    //swiatla rozna czestotliwosc przelaczania - oba swiatla na osobnych watkach
+    // wiecej pojazdow na skrzyzowaniu 
+    // pojazdy wjezdzaja na skrzyzowanie jeden po drugim, w zaleznosci od tego kiedy dojechaly 
+    // na skrzyzowanie, uzaleznione od czasu 
     void waitForGreen() {
         std::unique_lock<std::mutex> lock(mtx);
         cv.wait(lock,  [this] { return this->isGreen(); });
@@ -70,6 +74,7 @@ public:
     {
         _running = false;
     }
+
 };
 
 #endif 

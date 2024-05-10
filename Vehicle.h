@@ -14,7 +14,8 @@ private:
     int _x, _y;
     bool _running;
     int _direction;
-    std::shared_ptr<TrafficLight> _trafficLight;  
+    std::shared_ptr<TrafficLight> _trafficLight; 
+    std::shared_ptr<TrafficLight> _tl2; 
     int _speed;
     Type _type;
     std::mutex _mtx;
@@ -22,7 +23,7 @@ private:
     unsigned char _colorR, _colorG, _colorB;
 
 public:
-    Vehicle(int x, int y, Type type, std::shared_ptr<TrafficLight> trafficLight);
+    Vehicle(int x, int y, Type type, std::shared_ptr<TrafficLight> trafficLight,std::shared_ptr<TrafficLight> trafficLight2);
     
     void move();
     void draw(SDL_Renderer* renderer) const;

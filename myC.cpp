@@ -10,12 +10,12 @@
 #include "Vehicle.h"
 #include "TrafficLight.h"
 
-void spawnerMethod(  bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads);
-void spawnVehiclesHorizontal(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf);
-void spawnVehiclesVertical(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf);
+void spawnerMethod(  bool spawnHorizontal, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2 ,std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads);
+void spawnVehiclesHorizontal(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2);
+void spawnVehiclesVertical(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2);
 void deleteVehicles(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads);
 void drawTrack(SDL_Renderer* renderer);
-void drawLights(std::shared_ptr<TrafficLight> tl, SDL_Renderer* renderer );
+void drawLights(std::shared_ptr<TrafficLight> tl,std::shared_ptr<TrafficLight> tf2, SDL_Renderer* renderer );
 
 bool quit = false;
 
@@ -45,10 +45,13 @@ int main(int argc, char* argv[]) {
     std::vector<std::shared_ptr<Vehicle>> vehicles;
     std::vector<std::thread> vehicleThreads;
 
-    std::shared_ptr<TrafficLight> tf = std::make_shared<TrafficLight>();
-    std::thread tft = std::thread(&TrafficLight::automaticToggle, tf);
+    std::shared_ptr<TrafficLight> tf = std::make_shared<TrafficLight>(3);
+    std::shared_ptr<TrafficLight> tf2 = std::make_shared<TrafficLight>(5);
 
-    std::thread spawnerThread = std::thread(spawnerMethod,spawnHorizontal,std::ref(tf),std::ref(vehicles), std::ref(vehicleThreads));
+    std::thread tft = std::thread(&TrafficLight::automaticToggle, tf);
+    std::thread tft2 = std::thread(&TrafficLight::automaticToggle, tf2);
+
+    std::thread spawnerThread = std::thread(spawnerMethod,spawnHorizontal,std::ref(tf),std::ref(tf2),std::ref(vehicles), std::ref(vehicleThreads));
     
     SDL_Event e;
 
@@ -75,7 +78,7 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
         drawTrack(renderer);
-        drawLights(tf,renderer);
+        drawLights(tf,tf2,renderer);
 
         deleteVehicles(vehicles,vehicleThreads);
 
@@ -86,20 +89,26 @@ int main(int argc, char* argv[]) {
         vehicle->stop();
     }
 
+    for (auto& thread : vehicleThreads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+
     tf->end();
+    tf2->end();
 
     if(tft.joinable())
     {
         tft.join();
     }
+    if(tft2.joinable())
+    {
+        tft2.join();
+    }
     if(spawnerThread.joinable())
     {
         spawnerThread.join();
-    }
-    for (auto& thread : vehicleThreads) {
-        if (thread.joinable()) {
-            thread.join();
-        }
     }
 
     SDL_DestroyRenderer(renderer);
@@ -110,7 +119,7 @@ int main(int argc, char* argv[]) {
 }
 
 
-void spawnerMethod(bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads)
+void spawnerMethod(bool spawnHorizontal, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2, std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& vehicleThreads)
 {        
     while(!quit)
     {
@@ -120,11 +129,11 @@ void spawnerMethod(bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::
 
             if(spawnHorizontal)
             {
-                spawnVehiclesHorizontal(vehicles,vehicleThreads,tf);
+                spawnVehiclesHorizontal(vehicles,vehicleThreads,tf,tf2);
             }
             else
             {
-                spawnVehiclesVertical(vehicles,vehicleThreads,tf);
+                spawnVehiclesVertical(vehicles,vehicleThreads,tf,tf2);
             }
 
             spawnHorizontal=!spawnHorizontal;
@@ -134,18 +143,18 @@ void spawnerMethod(bool spawnHorizontal, std::shared_ptr<TrafficLight> tf, std::
     }
 }
 
-void spawnVehiclesHorizontal(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf) {
+void spawnVehiclesHorizontal(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2) {
  
     std::shared_ptr<Vehicle> vehicle;
 
-    vehicle = std::make_shared<Vehicle>(0, 0, Type::HORIZONTAL, tf);
+    vehicle = std::make_shared<Vehicle>(0, 0, Type::HORIZONTAL, tf,tf2);
         
     threads.push_back(std::thread(&Vehicle::move, vehicle));
     vehicles.push_back(vehicle);
         
 }
 
-void drawLights(std::shared_ptr<TrafficLight> tl, SDL_Renderer* renderer )
+void drawLights(std::shared_ptr<TrafficLight> tl, std::shared_ptr<TrafficLight> tl2, SDL_Renderer* renderer )
 {
     if(tl->getState() == TrafficLight::GREEN)
     {
@@ -153,25 +162,30 @@ void drawLights(std::shared_ptr<TrafficLight> tl, SDL_Renderer* renderer )
     SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     SDL_RenderFillRect(renderer, &rect);
 
-    SDL_Rect rect2 = {450, 450, 50, 50};
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_RenderFillRect(renderer, &rect2);
     }
     else{
     SDL_Rect rect = {350, 50, 50, 50};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &rect);
 
+    }
+    if(tl2->getState() == TrafficLight::GREEN)
+    {
+    SDL_Rect rect2 = {450, 450, 50, 50};
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    SDL_RenderFillRect(renderer, &rect2);
+    }
+    else{
     SDL_Rect rect2 = {450, 450, 50, 50};
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &rect2);
     }
 }
-void spawnVehiclesVertical(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf) {
+void spawnVehiclesVertical(std::vector<std::shared_ptr<Vehicle>>& vehicles, std::vector<std::thread>& threads, std::shared_ptr<TrafficLight> tf,std::shared_ptr<TrafficLight> tf2) {
  
     std::shared_ptr<Vehicle> vehicle;
          
-    vehicle = std::make_shared<Vehicle>(400, -30, Type::VERTICAL, tf);
+    vehicle = std::make_shared<Vehicle>(400, -30, Type::VERTICAL, tf,tf2);
         
     threads.push_back(std::thread(&Vehicle::move, vehicle));
     vehicles.push_back(vehicle);
